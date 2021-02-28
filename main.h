@@ -8,5 +8,3 @@
 #include "neuro.h"
 
 using namespace std;
-
-

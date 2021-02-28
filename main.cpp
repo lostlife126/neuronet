@@ -1,5 +1,10 @@
 #include "main.h"
 
+
+///// loading 'iris.data' from .... to vector of vector of parameters
+// in is vector of 4 doubles (sepal_len, sepal_wit, petal_len, petal_wit)
+// out is vector of irises (1,0,0) (0,1,0) (0,0,1)
+
 bool loadFisher(vector<vector<double>>& in, vector<vector<double>>& out)
 {
 	fstream file("iris.data");
@@ -9,6 +14,7 @@ bool loadFisher(vector<vector<double>>& in, vector<vector<double>>& out)
 		return false;
 	}
 
+	// for simplifying i changed all ',' to ' ' in my iris.dat
 	while (!file.eof())
 	{
 		in.push_back({});
@@ -24,35 +30,35 @@ bool loadFisher(vector<vector<double>>& in, vector<vector<double>>& out)
 		out.back()[2] = 0.0;
 		string caption;
 		file >> caption;
-		if (caption.size()==11)//if (caption.c_str() == "Iris-setosa")
+		// there is no protect from mistakes in file!!!
+		if (caption.c_str() == string("Iris-setosa"))
 		{
 			out.back()[0] = 1.0;
 		}
-		if (caption.size() == 15)//if (caption.c_str() == "Iris-versicolor")
+		if (caption.c_str() == string("Iris-versicolor"))
 		{
 			out.back()[1] = 1.0;
 		}
-		if (caption.size() == 14)//if (caption.c_str() == "Iris-virginica")
+		if (caption.c_str() == string("Iris-virginica"))
 		{
 			out.back()[2] = 1.0;
 		}
 	}
 	file.close();
-
 	return true;
 }
 
 
 int main()
 {
-	vector<int> par{4,4,3};
+	// vector of neuro-columns in neuronet
+	vector<int> par{4,8,8,3};// 4-in, 3-out, and 2x8 internal columns
 
-	Neuronet n;
-	n.init(par);
+	Neuronet n; 
+	n.init(par); 
 
-
-	vector<vector<double>> in;
-	vector<vector<double>> out;
+	vector<vector<double>> in; // input data
+	vector<vector<double>> out; // output data (look description of function 'loadFisher')
 
 	if (!loadFisher(in, out))
 	{
@@ -60,13 +66,13 @@ int main()
 		return 1;
 	}
 
-	n.calcForward(in[0]);
-	cout << "1 = " << n.column.back().neu[0].a << "  2 = " << n.column.back().neu[1].a << "  3 = " << n.column.back().neu[2].a << endl;
+	// it's learning of neuronet
+	for (int i = 0; i < 1000; i++)
+	{
+		n.learn(in, out, 10); // in (and out) mix and distribute by 10 (you can change this value) vectors for learning
+		cout << "error = " << n.total_error << endl; // sum of errors in all dataset = sqr(out - activation) where activation is activation in last column
+	}
 
-	n.learn(in, out, 50);
-
-	n.calcForward(in[0]);
-	cout << "1 = " << n.column.back().neu[0].a << "  2 = " << n.column.back().neu[1].a << "  3 = " << n.column.back().neu[2].a << endl;
-
+	system("pause"); // thank you for yor attention!
 	return 0;
 }
