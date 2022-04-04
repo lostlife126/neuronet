@@ -4,6 +4,7 @@
 #include <fstream>
 #include <cmath>
 #include <vector>
+#include <omp.h>
 
 #include "neuro.h"
 

@@ -34,14 +34,17 @@ bool loadFisher(vector<vector<double>>& in, vector<vector<double>>& out)
 		if (caption.c_str() == string("Iris-setosa"))
 		{
 			out.back()[0] = 1.0;
+			continue;
 		}
 		if (caption.c_str() == string("Iris-versicolor"))
 		{
 			out.back()[1] = 1.0;
+			continue;
 		}
 		if (caption.c_str() == string("Iris-virginica"))
 		{
 			out.back()[2] = 1.0;
+			continue;
 		}
 	}
 	file.close();
@@ -52,27 +55,29 @@ bool loadFisher(vector<vector<double>>& in, vector<vector<double>>& out)
 int main()
 {
 	// vector of neuro-columns in neuronet
-	vector<int> par{4,8,8,3};// 4-in, 3-out, and 2x8 internal columns
+	vector<int> par{ 4,8,8,3 };// 4-in, 3-out, and 2x8 internal columns
 
-	Neuronet n; 
-	n.init(par); 
+	Neuronet n;
+	n.init(par);
 
 	vector<vector<double>> in; // input data
 	vector<vector<double>> out; // output data (look description of function 'loadFisher')
 
 	if (!loadFisher(in, out))
 	{
-		cout << "no data - no deal!"<<endl;
+		cout << "no data - no deal!" << endl;
 		return 1;
 	}
 
 	// it's learning of neuronet
-	for (int i = 0; i < 1000; i++)
+	double t1 = omp_get_wtime();
+	for (int i = 0; i < 10000; i++)
 	{
 		n.learn(in, out, 10); // in (and out) mix and distribute by 10 (you can change this value) vectors for learning
 		cout << "error = " << n.total_error << endl; // sum of errors in all dataset = sqr(out - activation) where activation is activation in last column
 	}
-
+	double t2 = omp_get_wtime();
+	cout << "time = " << t2 - t1 << endl; // release was 0.23
 	system("pause"); // thank you for yor attention!
 	return 0;
 }
