@@ -26,133 +26,121 @@ double sqr(double x)
 }
 
 Neurocolumn::Neurocolumn(int n, int nPrev):
-	size_(n),
-	sizePrev_(nPrev)
+	_size(n),
+	_sizePrev(nPrev)
 {
-	a_.resize(n);
-	b_.resize(n);
-	db_.resize(n);
-	exp_.resize(n);
-	w_.resize(n);
-	dw_.resize(n);
+	_a.resize(n);
+	_b.resize(n);
+	_db.resize(n);
+	_exp.resize(n);
+	_w.resize(n);
+	_dw.resize(n);
 	for (int i = 0; i < n; i++)
 	{
-		a_[i] = 0.0;
-		b_[i] = rand1();
-		db_[i] = 0.0;
-		exp_[i] = 0.0;
-		w_[i].resize(nPrev);
-		dw_[i].resize(nPrev);
+		_a[i] = 0.0;
+		_b[i] = rand1();
+		_db[i] = 0.0;
+		_exp[i] = 0.0;
+		_w[i].resize(nPrev);
+		_dw[i].resize(nPrev);
 		for (int j = 0; j < nPrev; j++)
 		{
-			w_[i][j] = rand1();
-			dw_[i][j] = 0.0;
+			_w[i][j] = rand1();
+			_dw[i][j] = 0.0;
 		}
 	}
 }
 
 void Neurocolumn::calcActivation(vect& prev)
 {
-	for (int i = 0; i < size_; i++)
+	for (int i = 0; i < _size; i++)
 	{
-		a_[i] = b_[i];
-		for (int j = 0; j < sizePrev_; j++)
+		_a[i] = _b[i];
+		for (int j = 0; j < _sizePrev; j++)
 		{
-			a_[i] += w_[i][j] * prev[j];
+			_a[i] += _w[i][j] * prev[j];
 		}
 	}
-	for (int i = 0; i < size_; i++)
+	for (int i = 0; i < _size; i++)
 	{
-		a_[i] = sigma(a_[i]);
+		_a[i] = sigma(_a[i]);
 	}
 }
 
 void Neurocolumn::calcActivation(Neurocolumn* prev)
 {
-	for (int i = 0; i < size_; i++)
-	{
-		a_[i] = b_[i];
-		for (int j = 0; j < sizePrev_; j++)
-		{
-			a_[i] += w_[i][j] * prev->a_[j];
-		}
-	}
-	for (int i = 0; i < size_; i++)
-	{
-		a_[i] = sigma(a_[i]);
-	}
+	calcActivation(prev->_a);
 }
 
 void Neurocolumn::calcBack(Neurocolumn* prev)
 {
-
-	for (int i = 0; i < sizePrev_; i++)
+	for (int i = 0; i < _sizePrev; i++)
 	{
-		prev->exp_[i] = 0.0;
+		prev->_exp[i] = 0.0;
 	}
 
-	for (int i = 0; i < size_; i++)
+	for (int i = 0; i < _size; i++)
 	{ //////////////// c is error = sqr(exp - a), a - activation, z = a * w + b - value inside sigma(z)
-		double error = 2.0 * (a_[i] - exp_[i]) * dsigma(a_[i]);//// er = dc/da * da/dz   here is hardcoded to logical sigma
-		db_[i] += error;
-		for (int j = 0; j < sizePrev_; j++)
+		double error = 2.0 * (_a[i] - _exp[i]) * dsigma(_a[i]);//// er = dc/da * da/dz   here is hardcoded to logical sigma
+		_db[i] += error;
+		for (int j = 0; j < _sizePrev; j++)
 		{
-			dw_[i][j] += error * prev->a_[j]; // dc/dw = dc/da * da/dz * dz/dw = er * a;
-			prev->exp_[j] += error * w_[i][j]; // dc/da_prev = dc/da * da/dz * dz/da_ = er * w ; a_ - a from prev
+			_dw[i][j] += error * prev->_a[j]; // dc/dw = dc/da * da/dz * dz/dw = er * a;
+			prev->_exp[j] += error * _w[i][j]; // dc/da_prev = dc/da * da/dz * dz/da_ = er * w ; a_ - a from prev
 		}
 	}
-	for (int i = 0; i < sizePrev_; i++)
+	for (int i = 0; i < _sizePrev; i++)
 	{
-		prev->exp_[i] = prev->a_[i] - prev->exp_[i];
+		prev->_exp[i] = prev->_a[i] - prev->_exp[i];
 	}
 
 }
 
 void Neurocolumn::calcBack(vect& prev) // similar ar previous function but need not to calc a_
 {
-	for (int i = 0; i < size_; i++)
+	for (int i = 0; i < _size; i++)
 	{ //////////////// c is error = sqr(exp - a), a - activation, z = a * w + b - value inside sigma(z)
-		double error = 2.0 * (a_[i] - exp_[i]) * dsigma(a_[i]);//// er = dc/da * da/dz   here is hardcoded to logical sigma
-		db_[i] += error;
-		for (int j = 0; j < sizePrev_; j++)
+		double error = 2.0 * (_a[i] - _exp[i]) * dsigma(_a[i]);//// er = dc/da * da/dz   here is hardcoded to logical sigma
+		_db[i] += error;
+		for (int j = 0; j < _sizePrev; j++)
 		{
-			dw_[i][j] += error * prev[j]; // dc/dw = dc/da * da/dz * dz/dw = er * a;
+			_dw[i][j] += error * prev[j]; // dc/dw = dc/da * da/dz * dz/dw = er * a;
 		}
 	}
 }
 
 void Neurocolumn::correctAll(double c)
 {
-	for (int i = 0; i < size_; i++)
+	for (int i = 0; i < _size; i++)
 	{
-		exp_[i] = 0.0;
-		a_[i] = 0.0;
-		b_[i] -= db_[i] * c;
-		db_[i] = 0.0;
-		for (int j = 0; j < sizePrev_; j++)
+		_exp[i] = 0.0;
+		_a[i] = 0.0;
+		_b[i] -= _db[i] * c;
+		_db[i] = 0.0;
+		for (int j = 0; j < _sizePrev; j++)
 		{
-			w_[i][j] -= dw_[i][j] * c;
-			dw_[i][j] = 0.0;
+			_w[i][j] -= _dw[i][j] * c;
+			_dw[i][j] = 0.0;
 		}
 	}
 }
 
 void Neurocolumn::setExpected(vect& expected)
 {
-	for (int i = 0; i < size_; i++)
+	for (int i = 0; i < _size; i++)
 	{
-		exp_[i] = expected[i];
+		_exp[i] = expected[i];
 	}
 }
 
 double Neurocolumn::calcError(vect& out)
 {
 	double error = 0.0;
-	for (int i = 0; i < size_; i++)
+	for (int i = 0; i < _size; i++)
 	{
-		error += sqr(out[i] - a_[i]);
+		error += sqr(out[i] - _a[i]);
 	}
-	return error;
+	return error / _size;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -187,7 +175,7 @@ void Neuronet::calcBack(vect& in)
 void Neuronet::setExpected(vect& out)
 {
 	column.back()->setExpected(out);
-	error = column.back()->calcError(out);
+	errorOne = column.back()->calcError(out);
 }
 
 void Neuronet::correctAll(double c)
@@ -203,7 +191,9 @@ void  Neuronet::calcForwardBack(vector<double>& in, vector<double>& out)
 	calcForward(in); // forward
 	setExpected(out);   // get output
 	calcBack(in);  // go back
-	total_error += error; // and error
+	errorPack += errorOne; // and error
+	errorTotal += errorOne; // and error
+	errorOne = 0.0;
 }
 
 void Neuronet::mixData(vector<vector<double>>& in, vector<vector<double>>& out)
@@ -221,9 +211,10 @@ void Neuronet::mixData(vector<vector<double>>& in, vector<vector<double>>& out)
 	}
 }
 
-void Neuronet::learn(vector<vector<double>>& in, vector<vector<double>>& out, int n)
+void Neuronet::learnPack(vector<vector<double>>& in, vector<vector<double>>& out, int n)
 {
-	total_error = 0.0; // nulling total error
+	errorPack = 0.0; // nulling total error
+	errorTotal = 0.0;
 	mixData(in, out); // mix vectors
 	int iter = 0;
 	for (int i = 0; i < in.size(); i++) // learn it n times
@@ -232,14 +223,14 @@ void Neuronet::learn(vector<vector<double>>& in, vector<vector<double>>& out, in
 		iter++;
 		if (iter == n)
 		{
-			correctAll((learnRate * iter) / n); // and correct weights (w) and offsets (b) as mean rate of all miniset
+			correctAll(learnRate * errorPack); // and correct weights (w) and offsets (b) as mean rate of all miniset with coef depends on error
 			iter = 0;
+			errorPack = 0.0;
 		}
 	}
 	if (iter > 0) // if n is not multiple of in.size() we have little tail
 	{
-		correctAll((learnRate * iter) / n);
+		correctAll(learnRate * errorPack);
+		errorPack = 0.0;
 	}
-
-
 }

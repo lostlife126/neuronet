@@ -8,55 +8,21 @@ using namespace std;
 using vect = vector<double>;
 using vect2 = vector<vector<double>>;
 
-
-// i deleted class Neuron because bagan to use only class Neurocolumn
-// for more optimized calculations
-
-
-//class Neurocolumn;
-/*
-// Neuron is class stored weights with neurons other layer and offset for calc sigma(a * w + b)
-// and corrections of theese parameters
-class Neuron
-{
-public:
-
-	double b; // offset of z = w * a + b
-	double db;// correction of b
-	double a; // activation
-	double expected; // expected activation for back propagation calc
-	vector<double> w; // weights with prev layer 
-	vector<double> dw; // corrections of w
-
-	// nPrev - is count of neurons in prev layer for creating weights
-	void init(int nPrev); // initialization (nulling values and creation of vectors)
-
-	// c is factor for correction
-	void correct(double c); // correction of weights and offset
-
-	// prev is activations of prev layer (for first after input layer)
-	void calcActivation(vector<double>& prev); // calc a = sigma(w * a_ + b) for first (next to input layer)
-
-	// prev is prev layer (for internal layer)
-	void calcActivation(Neurocolumn& prev); // calc a for other layers
-};
-*/
-
 // layer of neurons. store neurons and can calcForward and back
 class Neurocolumn
 {
 
 //	vector<Neuron*> neu; // vector of neurons
 
-	vect a_; // activity of 
-	vect b_; // offset b in function z = b + w * a
-	vect db_; // correction of b term
-	vect exp_; //  expected value for calc of error
-	vect2 w_; // weights of every neurons of prev layer
-	vect2 dw_; // correction of w
+	vect _a; // activity of 
+	vect _b; // offset b in function z = b + w * a
+	vect _db; // correction of b term
+	vect _exp; //  expected value for calc of error
+	vect2 _w; // weights of every neurons of prev layer
+	vect2 _dw; // correction of w
 
-	int size_; // count of neurons in this column
-	int sizePrev_;  // count of neurons in previous column (or in-layer)
+	int _size; // count of neurons in this column
+	int _sizePrev;  // count of neurons in previous column (or in-layer)
 
 public:
 	// n is count of neurons in this layer and nPrev - in previous layer
@@ -80,9 +46,10 @@ class Neuronet
 {
 public:
 
-	double learnRate = 0.001; // learn rate for changing speed of learning (if big then less speed but more accurancy)
-	double total_error; // store sum of error in all learning set
-	double error;        // store error in one step forward-back
+	double learnRate = 0.01; // learn rate for changing speed of learning (if big then less speed but more accurancy)
+	double errorPack; // store sum of error in learning pack
+	double errorOne;        // store error in one step forward-back
+	double errorTotal;        // store sum of error in all learning set
 	vector<Neurocolumn*> column; // layers of neurons (input is not here)
 
 	// cols is vector of neurons in all layers vector {3,4,4,4,5} - 3 input neurons, 4x3 internal layers, 5 output neurons
@@ -108,7 +75,7 @@ public:
 	// vector in is vector of input data
 	// vector in is vector of input data 
 	// set of steps using all data (in.size() forward-back steps) with n corrections
-	void learn(vector<vector<double>>& in, vector<vector<double>>& out, int n);
+	void learnPack(vector<vector<double>>& in, vector<vector<double>>& out, int n);
 
 	// vector in is vector of input data
 	// vector in is vector of input data 
